@@ -1,11 +1,11 @@
 package com.example.demo.model.request;
 
-import java.io.Serializable;
 
-public class UploadFileGetLinkRequest implements Serializable {
+public class UploadFileGetLinkRequest {
     private String fileName;
     private Long fileSize;
-    private Long partNumber;
+    private Integer partNumber;
+    private String contentType;
 
     public String getFileName() {
         return fileName;
@@ -23,12 +23,20 @@ public class UploadFileGetLinkRequest implements Serializable {
         this.fileSize = fileSize;
     }
 
-    public Long getPartNumber() {
+    public Integer getPartNumber() {
         return partNumber;
     }
 
-    public void setPartNumber(Long partNumber) {
+    public void setPartNumber(Integer partNumber) {
         this.partNumber = partNumber;
+    }
+
+    public String getContentType() {
+        return contentType;
+    }
+
+    public void setContentType(String contentType) {
+        this.contentType = contentType;
     }
 
     @Override
