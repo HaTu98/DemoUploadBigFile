@@ -50,7 +50,7 @@ public class FilesController {
         if (file.isEmpty()) {
             return ResponseEntity.ok().build();
         }
-        String url = Constant.TEMP_FILE + "\\" + folder + "\\" + part + getFileExtension(file.getOriginalFilename());
+        String url = Constant.TEMP_FILE + "/" + folder + "/" + part + getFileExtension(file.getOriginalFilename());
         try {
             byte[] bytes = file.getBytes();
             Path path = Paths.get(url);
@@ -69,10 +69,10 @@ public class FilesController {
 
     @PostMapping("/files/done")
     public ResponseEntity<?> done(@RequestParam("location") String location) throws IOException {
-        String folderLocation = Constant.TEMP_FILE + "\\" + location;
+        String folderLocation = Constant.TEMP_FILE + "/" + location;
         File folder = new File(folderLocation);
         System.out.println(Arrays.asList(folder.listFiles()).size());
-        String newLocation = Constant.FINAL_FILE + "\\" + location;
+        String newLocation = Constant.FINAL_FILE + "/" + location;
         fileUploadService.combineFiles(folder, newLocation);
         return ResponseEntity.ok().build();
     }

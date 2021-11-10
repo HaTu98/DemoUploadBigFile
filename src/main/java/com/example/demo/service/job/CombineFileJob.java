@@ -59,7 +59,7 @@ public class CombineFileJob extends Thread{
     }
 
     private boolean isUploadDone(Integer partNumber, String folderName, Long fileSize) {
-        File folder = new File(Constant.TEMP_FILE + "\\" + folderName);
+        File folder = new File(Constant.TEMP_FILE + "/" + folderName);
 
         if (folder.listFiles() == null) return false;
         if (Arrays.asList(folder.listFiles()).size() != partNumber) return false;
@@ -72,8 +72,8 @@ public class CombineFileJob extends Thread{
     }
 
     public void combineFiles(String folderName) {
-        File folder = new File(Constant.TEMP_FILE + "\\" + folderName);
-        File output = new File( Constant.FINAL_FILE + "\\" + folderName + ".mp4");
+        File folder = new File(Constant.TEMP_FILE + "/" + folderName);
+        File output = new File( Constant.FINAL_FILE + "/" + folderName + ".mp4");
 
         FileOutputStream fos;
         FileInputStream fis;
