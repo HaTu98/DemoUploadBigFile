@@ -1,5 +1,6 @@
 package com.example.demo.controller;
 
+import com.example.demo.config.Constant;
 import com.example.demo.model.request.UploadFileGetLinkRequest;
 import com.example.demo.model.request.UploadFileGetLinkResponse;
 import com.example.demo.service.CombineFileService;
@@ -21,7 +22,7 @@ import java.util.UUID;
 @RequestMapping("api")
 public class FilesController {
 
-    private final static String UPLOADED_FOLDER  = new File("src\\main\\resources\\data").getAbsolutePath();
+    private final static String UPLOADED_FOLDER  = new File("src\\main\\java\\com\\example\\demo\\data").getAbsolutePath();
     private final FileUploadService fileUploadService;
     private final CombineFileService combineFileService;
 
@@ -34,7 +35,7 @@ public class FilesController {
     @PostMapping("/files/upload_links")
     public ResponseEntity<UploadFileGetLinkResponse> uploadLinks(@RequestBody UploadFileGetLinkRequest request) {
         String folderName = UUID.randomUUID().toString();
-        String location =  UPLOADED_FOLDER + "\\temp";
+        String location = Constant.TEMP_FILE;
         File file = new File(location, folderName);
         if (!file.exists()) {
             file.mkdir();
@@ -44,13 +45,12 @@ public class FilesController {
         UploadFileGetLinkResponse response = fileUploadService.generatePart(request.getPartNumber(), folderName);
         return ResponseEntity.ok().body(response);
     }
-
-    @PostMapping("/files/upload")
-    public ResponseEntity<?> uploadFile (@RequestParam("file")MultipartFile  file, @RequestParam("part") String part, @RequestParam("folder") String folder) {
+    @PatchMapping("/files/upload/{folder}")
+    public ResponseEntity<?> uploadFile (@RequestParam("file")MultipartFile  file, @RequestParam("part") String part, @PathVariable("folder") String folder) {
         if (file.isEmpty()) {
             return ResponseEntity.ok().build();
         }
-        String url = UPLOADED_FOLDER + "\\temp\\" + folder + "\\" + part + getFileExtension(file.getOriginalFilename());
+        String url = Constant.TEMP_FILE + "\\" + folder + "\\" + part + getFileExtension(file.getOriginalFilename());
         try {
             byte[] bytes = file.getBytes();
             Path path = Paths.get(url);
@@ -69,18 +69,18 @@ public class FilesController {
 
     @PostMapping("/files/done")
     public ResponseEntity<?> done(@RequestParam("location") String location) throws IOException {
-        String folderLocation = UPLOADED_FOLDER + "\\" + "temp\\" + location;
+        String folderLocation = Constant.TEMP_FILE + "\\" + location;
         File folder = new File(folderLocation);
         System.out.println(Arrays.asList(folder.listFiles()).size());
-        String newLocation = UPLOADED_FOLDER + "\\" + "final\\" + location;
+        String newLocation = Constant.FINAL_FILE + "\\" + location;
         fileUploadService.combineFiles(folder, newLocation);
         return ResponseEntity.ok().build();
     }
 
     @PostMapping("/files/chunk")
     public ResponseEntity<?> uploadFile (@RequestParam("folder") String folder) {
-        String url = "D:\\DEV\\demo\\src\\main\\resources\\data\\temp\\6018dd82-9395-44f1-a5e7-22442aa77e6d\\1.mp4";
-        fileUploadService.chunksFile("D:\\DEV\\demo\\src\\main\\resources\\data\\temp\\6018dd82-9395-44f1-a5e7-22442aa77e6d\\", url);
+        /*String url = "D:\\DEV\\demo\\src\\main\\resources\\data\\temp\\6018dd82-9395-44f1-a5e7-22442aa77e6d\\1.mp4";
+        fileUploadService.chunksFile("D:\\DEV\\demo\\src\\main\\resources\\data\\temp\\6018dd82-9395-44f1-a5e7-22442aa77e6d\\", url);*/
         return ResponseEntity.ok().build();
     }
 
