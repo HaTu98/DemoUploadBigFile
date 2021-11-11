@@ -41,8 +41,12 @@ public class FilesController {
         if (!file.exists()) {
             file.mkdir();
         }
-        combineFileService.combineFile(request.getPartNumber(), folderName,
+        /*combineFileService.combineFile(request.getPartNumber(), folderName,
+                request.getContentType(), request.getFileSize(), request.getFileName());*/
+
+        combineFileService.combineFileJob(request.getPartNumber(), folderName,
                 request.getContentType(), request.getFileSize(), request.getFileName());
+
         UploadFileGetLinkResponse response = fileUploadService.generatePart(request.getPartNumber(), folderName);
         return ResponseEntity.ok().body(response);
     }
