@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.UUID;
 
@@ -90,5 +91,15 @@ public class FilesController {
             return ""; // empty extension
         }
         return name.substring(lastIndexOf);
+    }
+
+    @PostMapping("/checksum")
+    public ResponseEntity<?> checkSum(@RequestParam("file")MultipartFile  file) throws NoSuchAlgorithmException, IOException {
+        String url = Constant.TEMP_FILE + "/" + file.getOriginalFilename();
+        byte[] bytes = file.getBytes();
+        Path path = Paths.get(url);
+        Files.write(path, bytes);
+
+        return ResponseEntity.ok().body(fileUploadService.getCheckSum(url));
     }
 }

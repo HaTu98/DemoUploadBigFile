@@ -9,6 +9,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.StopWatch;
 
 import java.io.*;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 
 @Component
@@ -37,34 +39,47 @@ public class CombineFileJob extends Thread{
         stopWatch.start("Combine file");
         int retry = 0;
         while (true) {
-            if (isUploadDone(partNumber, folderName, fileSize)) {
-                log.info("Start combine file");
-                combineFiles(folderName);
-                break;
-            } else {
-                try {
-                    retry++;
-                    Thread.sleep(1000);
-                    log.info("Combine file time {}", retry);
-                    if (retry > MAX_RETRY) {
-                        break;
+            try {
+                if (isUploadDone(partNumber, folderName, fileSize)) {
+                    log.info("Start combine file");
+                    combineFiles(folderName);
+                    break;
+                } else {
+                    try {
+                        retry++;
+                        Thread.sleep(1000);
+                        log.info("Combine file time {}", retry);
+                        if (retry > MAX_RETRY) {
+                            File folder = new File(Constant.TEMP_FILE + "/" + folderName);
+                            FileUtils.deleteDirectory(folder);
+                            break;
+                        }
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
                     }
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
                 }
+            } catch (NoSuchAlgorithmException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
             }
         }
         stopWatch.stop();
         log.info("Complete combine file take {}", stopWatch.getTotalTimeMillis());
     }
 
-    private boolean isUploadDone(Integer partNumber, String folderName, Long fileSize) {
+    private boolean isUploadDone(Integer partNumber, String folderName, Long fileSize) throws NoSuchAlgorithmException, IOException {
         File folder = new File(Constant.TEMP_FILE + "/" + folderName);
 
         if (folder.listFiles() == null) return false;
         if (Arrays.asList(folder.listFiles()).size() != partNumber) return false;
+
+        MessageDigest md5Digest = MessageDigest.getInstance("MD5");
         int size = 0;
         for (File file : folder.listFiles()) {
+            if (!checkSum(file, md5Digest)) {
+                return false;
+            }
             size += file.length();
         }
         if (size != fileSize) return false;
@@ -95,11 +110,48 @@ public class CombineFileJob extends Thread{
                 fis.close();
             }
             fos.close();
-            FileUtils.deleteDirectory(folder);
+            //FileUtils.deleteDirectory(folder);
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    private boolean checkSum(File file , MessageDigest digest) throws IOException {
+        String checkSum = getFileChecksum(digest, file);
+        return true;
+    }
+
+    private static String getFileChecksum(MessageDigest digest, File file) throws IOException
+    {
+        //Get file input stream for reading the file content
+        FileInputStream fis = new FileInputStream(file);
+
+        //Create byte array to read data in chunks
+        byte[] byteArray = new byte[1024];
+        int bytesCount = 0;
+
+        //Read file data and update in message digest
+        while ((bytesCount = fis.read(byteArray)) != -1) {
+            digest.update(byteArray, 0, bytesCount);
+        };
+
+        //close the stream; We don't need it now.
+        fis.close();
+
+        //Get the hash's bytes
+        byte[] bytes = digest.digest();
+
+        //This bytes[] has bytes in decimal format;
+        //Convert it to hexadecimal format
+        StringBuilder sb = new StringBuilder();
+        for(int i=0; i< bytes.length ;i++)
+        {
+            sb.append(Integer.toString((bytes[i] & 0xff) + 0x100, 16).substring(1));
+        }
+
+        //return complete hash
+        return sb.toString();
     }
 }
