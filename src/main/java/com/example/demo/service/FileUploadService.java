@@ -85,7 +85,7 @@ public class FileUploadService {
         for (int i = 0; i < partNumber; i++) {
             UploadPartFileLinkDto partFileLink = new UploadPartFileLinkDto();
             partFileLink.setFolder(folder);
-            partFileLink.setPartNumber("part" + (i + 1));
+            partFileLink.setPartNumber(String.valueOf(i + 1));
             uploadPartFileLinks.add(partFileLink);
         }
         return new UploadFileGetLinkResponse(folder, uploadPartFileLinks);

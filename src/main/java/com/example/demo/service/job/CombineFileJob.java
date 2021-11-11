@@ -12,6 +12,9 @@ import java.io.*;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
+import java.util.Comparator;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Component
 @Scope("prototype")
@@ -35,6 +38,7 @@ public class CombineFileJob extends Thread{
 
     @Override
     public void run() {
+        log.info("Start listen combine file {}", fileName);
         StopWatch stopWatch = new StopWatch();
         stopWatch.start("Combine file");
         int retry = 0;
@@ -48,7 +52,7 @@ public class CombineFileJob extends Thread{
                     try {
                         retry++;
                         Thread.sleep(1000);
-                        log.info("Combine file time {}", retry);
+                        //log.info("Combine file time {}", retry);
                         if (retry > MAX_RETRY) {
                             File folder = new File(Constant.TEMP_FILE + "/" + folderName);
                             FileUtils.deleteDirectory(folder);
@@ -96,11 +100,16 @@ public class CombineFileJob extends Thread{
         byte[] fileBytes;
         int bytesRead = 0;
         try {
+            List<File> fileList = Arrays.stream(folder.listFiles())
+                    .sorted(Comparator.comparing(o -> Integer.valueOf(o.getName())))
+                    .collect(Collectors.toList());
             fos = new FileOutputStream(output, true);
-            for (File file : folder.listFiles()) {
+            for (File file : fileList) {
+
                 fis = new FileInputStream(file);
                 fileBytes = new byte[(int) file.length()];
                 bytesRead = fis.read(fileBytes, 0,(int)  file.length());
+                System.out.println(file.getName() + " : " + bytesRead);
 
                 assert(bytesRead == fileBytes.length);
                 assert(bytesRead == (int) file.length());
@@ -110,7 +119,6 @@ public class CombineFileJob extends Thread{
                 fis.close();
             }
             fos.close();
-            //FileUtils.deleteDirectory(folder);
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         } catch (IOException e) {
