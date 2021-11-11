@@ -8,14 +8,13 @@ import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.*;
 
 @Service
 public class CombineFileService {
     private static final Logger log = LoggerFactory.getLogger(CombineFileService.class);
     private final ApplicationContext applicationContext;
-    private ExecutorService pool = Executors.newFixedThreadPool(2);
+    private ThreadPoolExecutor pool = new ThreadPoolExecutor(2, 5, 0, TimeUnit.MINUTES, new LinkedBlockingQueue<Runnable>());
 
     public CombineFileService(ApplicationContext applicationContext) {
         this.applicationContext = applicationContext;
